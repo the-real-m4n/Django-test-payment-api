@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Корзина</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .cart-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .item-info {
+            flex: 1;
+            margin-right: 20px;
+        }
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+        }
+        button {
+            padding: 5px 15px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .total {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        #checkout-button {
+            padding: 10px 30px;
+            font-size: 1.1em;
+        }
+    </style>
+   
+</head>
+<body>
+    <div class="cart-container">
+        <h1>Ваша корзина</h1>
+        
+        {% if order and order.orderitem_set.all %}
+            <div class="cart-items">
+                {% for order_item in order.orderitem_set.all %}
+                    <div class="cart-item">
+                        <div class="item-info">
+                            <h3>{{ order_item.item.name }}</h3>
+                            <p>Цена за шт.: ${{ order_item.item.price }}</p>
+                        </div>
+                        
+                        <div class="quantity-controls">
+                            <input type="number" 
+                                   value="{{ order_item.quantity }}" 
+                                   min="1" 
+                                   id="quantity-{{ order_item.item.id }}">
+                            <button class="update-quantity" 
+                                    data-item-id="{{ order_item.item.id }}">
+                                Обновить
+                            </button>
+                            <button class="remove-item" 
+                                    data-item-id="{{ order_item.item.id }}">
+                                Удалить
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="total">
+                Итого: ${{ order.total_price|floatformat:2 }}
+            </div>
+            <button id="checkout-button">Оплатить</button>
+
+        {% else %}
+            <p>Ваша корзина пуста</p>
+            <a href="/">Вернуться к покупкам</a>
+        {% endif %}
+    </div>
+
+    <script>
+        const stripe = Stripe('{{ stripe_public_key }}');
+        
+        // Обработка обновления количества
+        document.querySelectorAll('.update-quantity').forEach(button => {
+            button.addEventListener('click', async () => {
+                const itemId = button.dataset.itemId;
+                const quantity = document.getElementById(`quantity-${itemId}`).value;
+                
+                try {
+                    const response = await fetch("{% url 'buy-order' order.id %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({quantity: parseInt(quantity)})
+                    });
+                    
+                    if (response.ok) {
+                        location.reload();
+                    }
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                }
+            });
+        });
+
+        // Обработка удаления товара
+        document.querySelectorAll('.remove-item').forEach(button => {
+            button.addEventListener('click', async () => {
+                const itemId = button.dataset.itemId;
+                
+                try {
+                    const response = await fetch(`/cart/remove/${itemId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        location.reload();
+                    }
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                }
+            });
+        });
+
+        // Обработка оплаты
+        document.getElementById('checkout-button')?.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`/buy/order/{{ order.id }}/`);
+                
+                if (!response.ok) {
+                    throw new Error('Order not found');
+                }
+
+                const { session_id } = await response.json();
+                
+                await stripe.redirectToCheckout({
+                    sessionId: session_id
+                });
+            } catch (error) {
+                console.error('Ошибка оплаты:', error);
+                alert('Ошибка оплаты: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

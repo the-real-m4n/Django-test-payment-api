@@ -1,0 +1,29 @@
+
+<!DOCTYPE html>
+<html>
+<h1>Заказ #{{ order.id }}</h1>
+<ul>
+  {% for item in order.items.all %}
+    <li>{{ item.name }} — ${{ item.price }}</li>
+  {% endfor %}
+</ul>
+<p>Итого: ${{ order.total_price }}</p>
+<button id="buy-button">Оплатить</button>
+
+<script>
+    const stripe = Stripe('{{ stripe_public_key }}');
+    const buyButton = document.getElementById('buy-button');
+    
+    buyButton.addEventListener('click', async () => {
+        try {
+            const response = await fetch(`/buy/{{ item.id }}/`);
+            const { session_id } = await response.json();
+            
+            await stripe.redirectToCheckout({ sessionId: session_id });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+</script>
+
+</html>
