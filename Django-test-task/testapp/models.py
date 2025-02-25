@@ -6,6 +6,7 @@ class Item(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     
+    
 class OrderItem(models.Model):
     order = models.ForeignKey('Order', on_delete=models.CASCADE)
     item = models.ForeignKey('Item', on_delete=models.CASCADE)
@@ -23,3 +24,4 @@ class Order(models.Model):
             order_item.item.price * order_item.quantity 
             for order_item in self.orderitem_set.all()
         )
+

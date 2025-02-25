@@ -1,4 +1,4 @@
-import logging
+import logging, json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, Http404
 from .models import Item ,Order , OrderItem
@@ -9,20 +9,12 @@ from django.views.decorators.http import require_POST
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+def main_page(request):
+    items = Item.objects.all()
+    return render(request, 'index.html', {'items': items})
+
 def buy_item(request, id):
-    """
-    Initiates a Stripe checkout session for purchasing an item.
-
-    Args:
-        request (HttpRequest): The HTTP request object.
-        id (int): The primary key of the item to be purchased.
-
-    Returns:
-        JsonResponse: A JSON response containing the Stripe session ID.
-
-    Raises:
-        Http404: If the item with the given id does not exist.
-    """
+    
     item = get_object_or_404(Item, pk=id)
     session = stripe.checkout.Session.create(
         payment_method_types=['card'],
@@ -31,6 +23,7 @@ def buy_item(request, id):
                 'currency': 'rub',
                 'product_data': {
                     'name': item.name,
+                    
                 },
                 'unit_amount': int(item.price * 100),#  конвертируем цену из копеек в рубли
             },
@@ -97,7 +90,7 @@ def buy_order(request, order_id):
 
 
 
-# views.py
+
 def add_to_cart(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     

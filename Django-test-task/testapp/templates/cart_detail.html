@@ -73,10 +73,7 @@
                                    value="{{ order_item.quantity }}" 
                                    min="1" 
                                    id="quantity-{{ order_item.item.id }}">
-                            <button class="update-quantity" 
-                                    data-item-id="{{ order_item.item.id }}">
-                                Обновить
-                            </button>
+                            
                             <button class="remove-item" 
                                     data-item-id="{{ order_item.item.id }}">
                                 Удалить
@@ -100,31 +97,6 @@
     <script>
         const stripe = Stripe('{{ stripe_public_key }}');
         
-        // Обработка обновления количества
-        document.querySelectorAll('.update-quantity').forEach(button => {
-            button.addEventListener('click', async () => {
-                const itemId = button.dataset.itemId;
-                const quantity = document.getElementById(`quantity-${itemId}`).value;
-                
-                try {
-                    const response = await fetch("{% url 'buy-order' order.id %}", {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        },
-                        body: JSON.stringify({quantity: parseInt(quantity)})
-                    });
-                    
-                    if (response.ok) {
-                        location.reload();
-                    }
-                } catch (error) {
-                    console.error('Ошибка:', error);
-                }
-            });
-        });
-
         // Обработка удаления товара
         document.querySelectorAll('.remove-item').forEach(button => {
             button.addEventListener('click', async () => {

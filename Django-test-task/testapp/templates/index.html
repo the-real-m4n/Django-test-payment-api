@@ -1,0 +1,7 @@
+<h1>Main page</h1>
+<p> товары <p>
+{% for i in items %}
+    <a href="{% url 'item-detail' i.id %}">{{ i.name }}</a>
+    <p>Цена: {{ i.price }}<p>
+
+{% endfor %}
