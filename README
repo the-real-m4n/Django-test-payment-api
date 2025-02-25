@@ -43,7 +43,7 @@ Dockerfile
 
 1. Клонируйте репозиторий:
 
-git clone https://github.com/yourusername/Django-test-payment-api.git
+git clone https://github.com/the-real-m4n/Django-test-payment-api.git
 cd Django-test-payment-api
 
 2. Создайте и активируйте виртуальное окружение:
