@@ -41,8 +41,6 @@ INSTALLED_APPS = [
 ]
 
 
-STRIPE_PUBLIC_KEY = 'pk_test_51QwAYaH20YmsXKiduWYnOvrrdm0we4uisi14yxHQxljXac1VQWvLr5Ptk09IYXDV64XdG9lpg9YxkpOa2zsYHHpx00y79dTWkC'
-STRIPE_SECRET_KEY = 'sk_test_51QwAYaH20YmsXKid67ErHVjllmmEAOi2xMOsziGcI8gtRcuzojFqZ8x3X9RJTNx5rTOIpCphRvavaeeF1j2fnhwA00Q3iYfEof'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

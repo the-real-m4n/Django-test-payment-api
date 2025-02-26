@@ -1,13 +1,16 @@
-import logging, json
+import logging, json ,os
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, Http404
 from .models import Item ,Order , OrderItem
 import stripe
-from django.conf import settings
+
 from django.contrib import messages
 from django.views.decorators.http import require_POST
+from dotenv import load_dotenv
+load_dotenv()
+STRIPE_SECRET_KEY=stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY")
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
 
 def main_page(request):
     items = Item.objects.all()
@@ -39,14 +42,14 @@ def item_detail(request, id):
     item = get_object_or_404(Item, pk=id)
     return render(request, 'item_detail.html', {
         'item': item,
-        'stripe_public_key': settings.STRIPE_PUBLIC_KEY
+        'stripe_public_key': STRIPE_PUBLIC_KEY
     })
 
 def order_detail(request, id):
     order = get_object_or_404(Order, pk=id)
     return render(request, 'order_detail.html', {
         'order': order,
-        'stripe_public_key': settings.STRIPE_PUBLIC_KEY
+        'stripe_public_key': STRIPE_PUBLIC_KEY
     })
 
 def buy_order(request, order_id):
@@ -124,7 +127,7 @@ def cart_detail(request):
         order = None
     
     return render(request, 'cart_detail.html', {'order': order,
-                                                'stripe_public_key': settings.STRIPE_PUBLIC_KEY })
+                                                'stripe_public_key': STRIPE_PUBLIC_KEY })
 
 @require_POST
 def update_cart_item(request, item_id):
